@@ -1,0 +1,10 @@
+﻿@if (ViewData.Keys.Contains("message"))
+{
+    <p>
+        @ViewData["message"]
+    </p>
+}
+<div class="wrapper">
+    <h1>Welcome, Please login to continue...</h1>
+    <a class="loginBtn" asp-action="ExternalLogin" asp-route-provider="Microsoft">Microsoft Sign In</a>
+</div>

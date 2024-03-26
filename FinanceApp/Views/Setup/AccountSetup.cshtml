@@ -1,0 +1,28 @@
+﻿@model FinanceApp.Models.AccountSetup;
+@using System.Security.Claims;
+@using Microsoft.AspNetCore.Mvc;
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    var userEmail = User.FindFirstValue(ClaimTypes.Email);
+}
+<div class="container">
+    <div class="header">
+        <h1>Account Setup</h1>
+        <h2>Welcome @userEmail</h2>
+    </div>
+
+    <div class="form">
+        <form asp-action="AccountSetup" asp-controller="Setup" method="post">
+            <label for="account-name">Account Name</label>
+            <input type="text" asp-for="AccountName" class="form-control"/>
+            <label for="account-balance">Current Balance</label>
+            <p class="message-text">This balance is the current balance of your bank account (this number can also be negative if you are overdrawn)</p>
+            <input type="text" asp-for="AccountBalance" class="form-control" />
+            <input type="hidden" asp-for="Email" value="@userEmail" />
+            <button type="submit" class="submitBtn">Submit</button>
+        </form>
+    </div>
+</div>
