@@ -114,6 +114,37 @@ namespace FinanceApp.Controllers
             return View();
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Welcome(Payments model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Insert data into the UserFinance table
+                var connectionString = _dbContext.Database.GetConnectionString();
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    using (var command = new SqlCommand("InsertPayment", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@Email", model.Email);
+                        command.Parameters.AddWithValue("@PaymentName", model.PaymentName);
+                        command.Parameters.AddWithValue("@PaymentTotal", model.PaymentTotal);
+                        command.Parameters.AddWithValue("@PaymentDate", model.PaymentDate);
+                        command.Parameters.AddWithValue("@PaymentFreq", model.PaymentFreq);
+
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+
+                return RedirectToAction("Welcome", "Setup");
+            }
+
+            return View(model);
+        }
+
         private async Task<bool> GetSetupStatus(string email)
         {
             var connectionString = _dbContext.Database.GetConnectionString();

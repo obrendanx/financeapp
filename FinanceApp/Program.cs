@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using FinanceApp;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using FinanceApp.Controllers;
+using Microsoft.AspNetCore.Mvc;
+using YourNamespace.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +42,8 @@ builder.Services.PostConfigure<CookieAuthenticationOptions>(IdentityConstants.Ap
         options.LoginPath = "/Login/Login";
         options.AccessDeniedPath = "/Login/Login";
     });
+
+//builder.Services.AddHostedService<PaymentProcessingService>();
 
 var app = builder.Build();
 

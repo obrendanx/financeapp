@@ -18,4 +18,9 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="SQL\Tables\" />
+    <Folder Include="SQL\Procedures\" />
+  </ItemGroup>
+
 </Project>

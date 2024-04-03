@@ -10,5 +10,6 @@ namespace FinanceApp
         }
 
         public DbSet<UserAccount> UserAccounts { get; set; }
+        public DbSet<Payments> Payments { get; set; }
     }
 }
