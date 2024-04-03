@@ -132,7 +132,7 @@ namespace FinanceApp.Controllers
                         command.Parameters.AddWithValue("@Email", model.Email);
                         command.Parameters.AddWithValue("@PaymentName", model.PaymentName);
                         command.Parameters.AddWithValue("@PaymentTotal", model.PaymentTotal);
-                        command.Parameters.AddWithValue("@PaymentDate", model.PaymentDate.Day);
+                        command.Parameters.AddWithValue("@PaymentDate", model.PaymentDate);
                         command.Parameters.AddWithValue("@PaymentFreq", model.PaymentFreq);
 
                         await command.ExecuteNonQueryAsync();

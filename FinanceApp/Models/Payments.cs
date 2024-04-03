@@ -11,9 +11,9 @@ namespace FinanceApp.Models
         [Required]
         public string PaymentName { get; set; }
         [Required]
-        public int PaymentTotal { get; set; }
+        public decimal PaymentTotal { get; set; }
         [Required]
-        public DateTime PaymentDate { get; set; }
+        public string PaymentDate { get; set; }
         [Required]
         public string PaymentFreq { get; set; }
     }

@@ -15,10 +15,7 @@ using YourNamespace.Filters;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews(options =>
-{
-    options.Filters.Add(new TypeFilterAttribute(typeof(RequireSigninFilter)));
-});
+builder.Services.AddControllersWithViews();
 
 builder.Services.AddAuthentication().AddMicrosoftAccount(options =>
 {
