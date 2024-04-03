@@ -25,6 +25,13 @@
                     <td>@payment.PaymentTotal</td>
                     <td>@payment.PaymentDate</td>
                     <td>@payment.PaymentFreq</td>
+                    <td>
+                        @using (Html.BeginForm("RemovePayment", "Profile", FormMethod.Post))
+                        {
+                            @Html.Hidden("paymentId", payment.PaymentId)
+                            <button type="submit" class="btn btn-danger">Remove</button>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>

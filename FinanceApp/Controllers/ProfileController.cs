@@ -58,5 +58,25 @@ namespace FinanceApp.Controllers
 
             return View();
         }
+
+        [HttpPost]
+        public ActionResult RemovePayment(int paymentId)
+        {
+            var connectionString = _dbContext.Database.GetConnectionString();
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var command = new SqlCommand("RemovePayment", connection))
+                {
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@PaymentId", paymentId);
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            // Redirect back to the Index action after removing the payment
+            return RedirectToAction("ShowPayments");
+        }
     }
 }
