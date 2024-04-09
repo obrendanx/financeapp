@@ -85,7 +85,7 @@ namespace FinanceApp.Controllers
                 }
             }
         }
-
+        
         public IActionResult Welcome()
         {
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
@@ -143,6 +143,35 @@ namespace FinanceApp.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddPayment(decimal paymentAmount, string Email)
+        {
+            if (ModelState.IsValid)
+            {
+                // Insert data into the UserFinance table
+                var userEmail = User.FindFirstValue(ClaimTypes.Email);
+                var connectionString = _dbContext.Database.GetConnectionString();
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    using (var command = new SqlCommand("DeductPaymentAmount", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@Email", Email);
+                        command.Parameters.AddWithValue("@PaymentAmount", paymentAmount);
+
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+
+                return RedirectToAction("Welcome", "Setup");
+            }
+
+            return RedirectToAction("Welcome", "Setup");
         }
 
         private async Task<bool> GetSetupStatus(string email)
