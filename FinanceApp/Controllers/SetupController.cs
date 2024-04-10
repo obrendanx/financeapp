@@ -173,6 +173,35 @@ namespace FinanceApp.Controllers
 
             return RedirectToAction("Welcome", "Setup");
         }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddFunds(decimal paymentAmount, string Email)
+        {
+            if (ModelState.IsValid)
+            {
+                // Insert data into the UserFinance table
+                var userEmail = User.FindFirstValue(ClaimTypes.Email);
+                var connectionString = _dbContext.Database.GetConnectionString();
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    using (var command = new SqlCommand("IncreaseBalance", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@Email", Email);
+                        command.Parameters.AddWithValue("@PaymentAmount", paymentAmount);
+
+                        await command.ExecuteNonQueryAsync();
+                    }
+                }
+
+                return RedirectToAction("Welcome", "Setup");
+            }
+
+            return RedirectToAction("Welcome", "Setup");
+        }
 
         private async Task<bool> GetSetupStatus(string email)
         {
