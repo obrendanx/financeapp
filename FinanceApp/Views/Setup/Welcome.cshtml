@@ -24,18 +24,34 @@
     }
     
     function showPaySetup(divId) {
-            var div = document.getElementById(divId);
-            if (div.style.display === "block") {
-                div.style.display = "none";
-            } else {
-                div.style.display = "block";
-            }
+        var div = document.getElementById(divId);
+        
+        if (div.style.display === "block") {
+           div.style.display = "none";
+        } else {
+           div.style.display = "block";
         }
+    }
     
-        function closePay(divId) {
-            var div = document.getElementById(divId);
-            div.style.display = "none";
-        }
+    function closePay(divId) {
+        var div = document.getElementById(divId);
+        div.style.display = "none";
+    }
+        
+    function showFundsSetup(divId) {
+         var div = document.getElementById(divId);
+         
+         if (div.style.display === "block") {
+             div.style.display = "none";
+         } else {
+             div.style.display = "block";
+         }
+    }
+        
+    function closeFunds(divId) {
+         var div = document.getElementById(divId);
+         div.style.display = "none";
+    }
 </script>
 
 <h1>Welcome Back!</h1>
@@ -45,8 +61,9 @@
 }
 
 <div>
-    <button onclick="showPaymentSetup('paymentSetup')" class="btn btn-primary">Add Monthly Payment</button>
-    <button onclick="showPaySetup('addPayment')" class="btn btn-primary">Add Payment</button>
+    <button onclick="showPaymentSetup('paymentSetup')" class="btn btn-primary mb-1">Add Monthly Payment</button><br/>
+    <button onclick="showPaySetup('addPayment')" class="btn btn-primary mb-1">Add Payment</button><br/>
+    <button onclick="showFundsSetup('addFunds')" class="btn btn-primary">Add Funds</button>
 
     <div class="payment-setup" id="paymentSetup" style="display:none">
         <button onclick="closePayment('paymentSetup')" class="btn btn-secondary mt-2 close-btn">Close</button>
@@ -70,14 +87,25 @@
         </form>
     </div>
     
-    <div class="payment-setup" id="addPayment" style="display:none">
-            <button onclick="closePay('addPayment')" class="btn btn-secondary mt-2 close-btn">Close</button>
-            <h2>Add a single payment</h2>
-            <form asp-action="AddPayment" asp-controller="Setup" method="post">
+    <div class="payment" id="addPayment" style="display:none">
+        <button onclick="closePay('addPayment')" class="btn btn-secondary mt-2 close-btn">Close</button>
+        <h2>Add a single payment</h2>
+        <form asp-action="AddPayment" asp-controller="Setup" method="post">
+            <label>Payment Total</label>
+            <input type="text" name="PaymentAmount" class="form-control" />
+            <input type="hidden" name="Email" value="@userEmail" />
+            <button type="submit" class="submitBtn">Add Payment</button>
+        </form>
+    </div>
+    
+    <div class="payment" id="addFunds" style="display:none">
+            <button onclick="closeFunds('addFunds')" class="btn btn-secondary mt-2 close-btn">Close</button>
+            <h2>Add some funds</h2>
+            <form asp-action="AddFunds" asp-controller="Setup" method="post">
                 <label>Payment Total</label>
                 <input type="text" name="PaymentAmount" class="form-control" />
                 <input type="hidden" name="Email" value="@userEmail" />
-                <button type="submit" class="submitBtn">Submit</button>
+                <button type="submit" class="submitBtn">Add Funds</button>
             </form>
         </div>
 </div>
