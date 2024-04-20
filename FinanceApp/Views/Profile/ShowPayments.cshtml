@@ -1,4 +1,4 @@
-﻿@model List<Payments>
+﻿@model FinanceApp.Models.Payments;
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
@@ -57,20 +57,20 @@
                         <h2>Edit a payment</h2>
                         <form asp-action="EditPayment" asp-controller="Profile" method="post">
                             <label for="payment-name">Payment Name</label>
-                            <input type="text" asp-for="@payment.PaymentName" class="form-control" value="@payment.PaymentName"/>
+                            <input type="text" asp-for="PaymentName" class="form-control" value="@payment.PaymentName"/>
                             <label for="payment-total">Payment Total</label>
-                            <input type="text" asp-for="@payment.PaymentTotal" class="form-control" value="@payment.PaymentTotal"/>
+                            <input type="text" asp-for="PaymentTotal" class="form-control" value="@payment.PaymentTotal"/>
                             <label for="payment-date">Payment Date</label>
-                            <input type="date" asp-for="@payment.PaymentDate" class="form-control" value="@payment.PaymentDate"/>
+                            <input type="date" asp-for="PaymentDate" class="form-control" value="@payment.PaymentDate"/>
                             <label for="payment-freq">Payment Frequency</label>
-                            <select asp-for="@payment.PaymentFreq" class="form-control">
+                            <select asp-for="PaymentFreq" class="form-control">
                                 <option>Daily</option>
                                 <option>Weekly</option>
                                 <option>Monthly</option>
                                 <option>Yearly</option>
                             </select>
-                            <input type="hidden" asp-for="@payment.Email" value="@payment.Email" />
-                            <input type="hidden" asp-for="@payment.PaymentId" value="@payment.PaymentId" />
+                            <input type="hidden" asp-for="Email" value="@payment.Email" />
+                            <input type="hidden" asp-for="PaymentId" value="@payment.PaymentId" />
                             <button type="submit" class="submitBtn">Submit</button>
                         </form>
                     </div>
