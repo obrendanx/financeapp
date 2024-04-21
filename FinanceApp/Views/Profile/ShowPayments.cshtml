@@ -50,10 +50,10 @@
                     }
                 </td>
                 <td>
-                    <button onclick="showEditPayment('editPayment')" class="btn btn-primary">Edit</button>
+                        <button onclick="showEditPayment('editPayment-@payment.PaymentId')" class="btn btn-primary">Edit</button>
                     
-                    <div class="payment-setup" id="editPayment" style="display:none">
-                        <button onclick="closeEditPayment('editPayment')" class="btn btn-secondary mt-2 close-btn">Close</button>
+                        <div class="payment-setup" id="editPayment-@payment.PaymentId" style="display:none">
+                            <button onclick="closeEditPayment('editPayment-@payment.PaymentId')" class="btn btn-secondary mt-2 close-btn">Close</button>
                         <h2>Edit a payment</h2>
                         <form asp-action="EditPayment" asp-controller="Profile" method="post">
                             <label for="payment-name">Payment Name</label>
