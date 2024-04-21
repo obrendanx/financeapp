@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Data;
 using System.Security.Claims;
 using YourNamespace.Filters;
 
@@ -77,6 +78,37 @@ namespace FinanceApp.Controllers
 
             // Redirect back to the Index action after removing the payment
             return RedirectToAction("ShowPayments");
+        }
+        
+        [HttpPost]
+        public ActionResult EditPayment(Payments model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Insert data into the UserFinance table
+                var connectionString = _dbContext.Database.GetConnectionString();
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    using (var command = new SqlCommand("UpdatePayment", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@Email", model.Email);
+                        command.Parameters.AddWithValue("@PaymentName", model.PaymentName);
+                        command.Parameters.AddWithValue("@PaymentTotal", model.PaymentTotal);
+                        command.Parameters.AddWithValue("@PaymentDate", model.PaymentDate);
+                        command.Parameters.AddWithValue("@PaymentFreq", model.PaymentFreq);
+                        command.Parameters.AddWithValue("@PaymentID", model.PaymentId);
+
+                        command.ExecuteNonQueryAsync();
+                    }
+                }
+
+                return RedirectToAction("ShowPayments", "Profile");
+            }
+
+            return RedirectToAction("ShowPayments", "Profile");
         }
     }
 }

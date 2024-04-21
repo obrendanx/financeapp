@@ -1,4 +1,4 @@
-﻿@model List<Payments>
+﻿@model FinanceApp.Models.Payments;
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
@@ -6,34 +6,77 @@
     List<Payments> payments = ViewBag.Payments;
 }
 
+<script>
+    function showEditPayment(divId) {
+             var div = document.getElementById(divId);
+             
+             if (div.style.display === "block") {
+                 div.style.display = "none";
+             } else {
+                 div.style.display = "block";
+             }
+        }
+            
+        function closeEditPayment(divId) {
+             var div = document.getElementById(divId);
+             div.style.display = "none";
+        }
+</script>
+
 <div class="container">
     <h1>Payments</h1>
     <table class="table">
         <thead>
-            <tr>
-                <th>Payment Name</th>
-                <th>Payment Amount</th>
-                <th>Payment Date</th>
-                <th>Payment Frequency</th>
-            </tr>
+        <tr>
+            <th>Payment Name</th>
+            <th>Payment Amount</th>
+            <th>Payment Date</th>
+            <th>Payment Frequency</th>
+        </tr>
         </thead>
         <tbody>
-            @foreach (var payment in payments)
-            {
-                <tr>
-                    <td>@payment.PaymentName</td>
-                    <td>@payment.PaymentTotal</td>
-                    <td>@payment.PaymentDate</td>
-                    <td>@payment.PaymentFreq</td>
-                    <td>
-                        @using (Html.BeginForm("RemovePayment", "Profile", FormMethod.Post))
-                        {
-                            @Html.Hidden("paymentId", payment.PaymentId)
-                            <button type="submit" class="btn btn-danger">Remove</button>
-                        }
-                    </td>
-                </tr>
-            }
+        @foreach (var payment in payments)
+        {
+            <tr>
+                <td>@payment.PaymentName</td>
+                <td>@payment.PaymentTotal</td>
+                <td>@payment.PaymentDate</td>
+                <td>@payment.PaymentFreq</td>
+                <td>
+                    @using (Html.BeginForm("RemovePayment", "Profile", FormMethod.Post))
+                    {
+                        @Html.Hidden("paymentId", payment.PaymentId)
+                        <button type="submit" class="btn btn-danger">Remove</button>
+                    }
+                </td>
+                <td>
+                    <button onclick="showEditPayment('editPayment')" class="btn btn-primary">Edit</button>
+                    
+                    <div class="payment-setup" id="editPayment" style="display:none">
+                        <button onclick="closeEditPayment('editPayment')" class="btn btn-secondary mt-2 close-btn">Close</button>
+                        <h2>Edit a payment</h2>
+                        <form asp-action="EditPayment" asp-controller="Profile" method="post">
+                            <label for="payment-name">Payment Name</label>
+                            <input type="text" asp-for="PaymentName" class="form-control" value="@payment.PaymentName"/>
+                            <label for="payment-total">Payment Total</label>
+                            <input type="text" asp-for="PaymentTotal" class="form-control" value="@payment.PaymentTotal"/>
+                            <label for="payment-date">Payment Date</label>
+                            <input type="date" asp-for="PaymentDate" class="form-control" value="@payment.PaymentDate"/>
+                            <label for="payment-freq">Payment Frequency</label>
+                            <select asp-for="PaymentFreq" class="form-control">
+                                <option>Daily</option>
+                                <option>Weekly</option>
+                                <option>Monthly</option>
+                                <option>Yearly</option>
+                            </select>
+                            <input type="hidden" asp-for="Email" value="@payment.Email" />
+                            <input type="hidden" asp-for="PaymentId" value="@payment.PaymentId" />
+                            <button type="submit" class="submitBtn">Submit</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
         </tbody>
     </table>
 </div>
