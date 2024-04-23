@@ -6,6 +6,7 @@
 *@
 @{
     var userEmail = User.FindFirstValue(ClaimTypes.Email);
+    List<Payments> payments = ViewBag.Payments;
 }
 
 <script>
@@ -112,16 +113,29 @@
 
 <div id="calendar"></div>
 
+<script>
+
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.css" rel="stylesheet" />
 
     <script>
+        var events = [];
+        @foreach (var payment in ViewBag.Payments)
+        {
+            <text>
+            events.push({
+                title: "@payment.PaymentName",
+                date: "@payment.PaymentDate"
+            });
+            </text>
+        }
 
         document.addEventListener('DOMContentLoaded', function () {
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth'
+                initialView: 'dayGridMonth',
+                events: events
             });
             calendar.render();
         });

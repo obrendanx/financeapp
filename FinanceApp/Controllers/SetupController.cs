@@ -111,6 +111,38 @@ namespace FinanceApp.Controllers
                 }
             }
 
+            var sqlQuery2 = "EXECUTE GetAllPayments @Email";
+
+            List<Payments> payments = new List<Payments>();
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (var command = new SqlCommand(sqlQuery2, connection))
+                {
+                    command.Parameters.AddWithValue("@Email", userEmail);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Payments payment = new Payments
+                            {
+                                PaymentId = Convert.ToInt32(reader["PaymentId"]),
+                                Email = Convert.ToString(reader["Email"]),
+                                PaymentName = Convert.ToString(reader["PaymentName"]),
+                                PaymentTotal = Convert.ToDecimal(reader["PaymentTotal"]),
+                                PaymentDate = Convert.ToString(reader["PaymentDate"]),
+                                PaymentFreq = Convert.ToString(reader["PaymentFreq"]),
+                            };
+                            payments.Add(payment);
+                        }
+                    }
+                }
+
+                ViewBag.Payments = payments;
+            }
+
             return View();
         }
 
