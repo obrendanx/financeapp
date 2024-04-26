@@ -82,6 +82,7 @@
                 <option>Weekly</option>
                 <option>Monthly</option>
                 <option>Yearly</option>
+                <option>One Time Payment</option>
             </select>
             <input type="hidden" asp-for="Email" value="@userEmail" />
             <button type="submit" class="submitBtn">Submit</button>
@@ -114,22 +115,111 @@
 <div id="calendar"></div>
 
 <script>
+    var events = [];
 
-@section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.css" rel="stylesheet" />
+    function incrementMonth(dateString) {
+        var year = parseInt(dateString.substring(0, 4));
+        var month = parseInt(dateString.substring(5, 7));
 
-    <script>
-        var events = [];
-        @foreach (var payment in ViewBag.Payments)
-        {
-            <text>
-            events.push({
-                title: "@payment.PaymentName",
-                date: "@payment.PaymentDate"
-            });
-            </text>
+        month++;
+
+        if (month > 12) {
+            month = 1;
+            year++;
         }
+
+        var newMonth = month < 10 ? '0' + month : month;
+        var newDateString = year + '-' + newMonth + dateString.substring(7);
+        return newDateString;
+    }
+
+    function incrementWeek(dateString) {
+        var parts = dateString.split('-');
+        var year = parseInt(parts[0]);
+        var month = parseInt(parts[1]) - 1; 
+        var day = parseInt(parts[2]);
+
+        var startDate = new Date(year, month, day);
+        startDate.setDate(startDate.getDate() + 7); 
+
+        var newYear = startDate.getFullYear();
+        var newMonth = startDate.getMonth() + 1; 
+        var newDay = startDate.getDate();
+
+        newMonth = newMonth < 10 ? '0' + newMonth : newMonth;
+        newDay = newDay < 10 ? '0' + newDay : newDay;
+
+        var newDateString = newYear + '-' + newMonth + '-' + newDay;
+        return newDateString;
+    }
+
+    function incrementYear(dateString) {
+        var parts = dateString.split('-');
+        var year = parseInt(parts[0]) + 1; 
+        var month = parseInt(parts[1]);
+        var day = parseInt(parts[2]);
+
+        var newMonth = month < 10 ? '0' + month : month;
+        var newDay = day < 10 ? '0' + day : day;
+
+        var newDateString = year + '-' + newMonth + '-' + newDay;
+        return newDateString;
+    }
+
+    function generateEvents(paymentDate, paymentTitle, paymentFreq) {
+        var startDate = paymentDate;
+
+        if (paymentFreq === "Monthly") {
+            for (var i = 0; i < 24; i++) {
+                events.push({
+                    title: paymentTitle,
+                    start: startDate,
+                    allDay: true 
+                });
+
+                startDate = incrementMonth(startDate);
+            }
+        } else if (paymentFreq === "Daily") {
+            events.push({
+                title: paymentTitle,
+                start: paymentDate,
+                startRecur: paymentDate,
+                endRecur: "2099-01-01"
+            });
+        } else if (paymentFreq === "Weekly") {
+            for (var i = 0; i < 150; i++) {
+                events.push({
+                    title: paymentTitle,
+                    start: startDate,
+                    allDay: true 
+                });
+
+                startDate = incrementWeek(startDate);
+            }
+        } else if (paymentFreq === "Yearly") {
+            for (var i = 0; i < 15; i++) {
+                events.push({
+                    title: paymentTitle,
+                    start: startDate,
+                    allDay: true 
+                });
+
+                startDate = incrementYear(startDate);
+            }
+        } else {
+            events.push({
+                title: paymentTitle,
+                start: paymentDate
+            })
+        }
+    }
+
+    @foreach (var payment in ViewBag.Payments)
+    {
+        <text>
+            generateEvents("@payment.PaymentDate", "@payment.PaymentName", "@payment.PaymentFreq");
+        </text>
+    }
 
         document.addEventListener('DOMContentLoaded', function () {
             var calendarEl = document.getElementById('calendar');
@@ -140,5 +230,5 @@
             calendar.render();
         });
 
-    </script>
-}
+</script>
+
