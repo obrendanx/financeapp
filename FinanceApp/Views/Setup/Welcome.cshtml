@@ -62,8 +62,8 @@
 }
 
 <div>
-    <button onclick="showPaymentSetup('paymentSetup')" class="btn btn-primary mb-1">Add Monthly Payment</button><br/>
-    <button onclick="showPaySetup('addPayment')" class="btn btn-primary mb-1">Add Payment</button><br/>
+    <button onclick="showPaymentSetup('paymentSetup')" class="btn btn-primary mb-1">Add Monthly Payment</button>
+    <button onclick="showPaySetup('addPayment')" class="btn btn-primary mb-1">Add Payment</button>
     <button onclick="showFundsSetup('addFunds')" class="btn btn-primary">Add Funds</button>
 
     <div class="payment-setup" id="paymentSetup" style="display:none">
@@ -110,6 +110,14 @@
                 <button type="submit" class="submitBtn">Add Funds</button>
             </form>
         </div>
+</div>
+
+<div class="payment-setup" id="showPayment" style="display:none">
+    <button onclick="closeEditPayment('showPayment')" class="btn btn-secondary mt-2 close-btn">Close</button>
+
+    <h2>Payment Name: <span id="paymentName"></span></h2>
+    <h2>Payment Date: <span id="paymentDate"></span></h2>
+    <h2>Payment Frequency: <span id="paymentFreq"></span></h2>
 </div>
 
 <div id="calendar"></div>
@@ -166,7 +174,7 @@
         return newDateString;
     }
 
-    function generateEvents(paymentDate, paymentTitle, paymentFreq) {
+    function generateEvents(paymentDate, paymentTitle, paymentFreq, paymentId) {
         var startDate = paymentDate;
 
         if (paymentFreq === "Monthly") {
@@ -174,6 +182,8 @@
                 events.push({
                     title: paymentTitle,
                     start: startDate,
+                    freq: paymentFreq,
+                    paymentid: paymentId,
                     allDay: true 
                 });
 
@@ -191,6 +201,8 @@
                 events.push({
                     title: paymentTitle,
                     start: startDate,
+                    freq: paymentFreq,
+                    paymentid: paymentId,
                     allDay: true 
                 });
 
@@ -201,6 +213,8 @@
                 events.push({
                     title: paymentTitle,
                     start: startDate,
+                    freq: paymentFreq,
+                    paymentid: paymentId,
                     allDay: true 
                 });
 
@@ -209,7 +223,9 @@
         } else {
             events.push({
                 title: paymentTitle,
-                start: paymentDate
+                start: paymentDate,
+                freq: paymentFreq,
+                paymentid: paymentId,
             })
         }
     }
@@ -217,7 +233,7 @@
     @foreach (var payment in ViewBag.Payments)
     {
         <text>
-            generateEvents("@payment.PaymentDate", "@payment.PaymentName", "@payment.PaymentFreq");
+            generateEvents("@payment.PaymentDate", "@payment.PaymentName", "@payment.PaymentFreq", "@payment.PaymentId");
         </text>
     }
 
@@ -225,10 +241,34 @@
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                events: events
+                events: events,
+                eventClick: function (info) {
+                    showPayment(info.event.start, info.event.title, info.event.freq, info.event.paymentid);
+                    console.log(info.event.start, info.event.title, info.event.freq, info.event.paymentid);
+                }
             });
             calendar.render();
         });
+
+    function showPayment(paymentDate, paymentName, paymentFreq, paymentId) {
+        console.log(paymentDate, paymentName, paymentFreq);
+        var div = document.getElementById("showPayment");
+        var name = document.getElementById("paymentName");
+        var paymentDate = document.getElementById("paymentDate");
+        var paymentFreq = document.getElementById("paymentFreq");
+
+        if (div.style.display === "block") {
+            div.style.display = "none";
+        } else {
+            div.style.display = "block";
+            name.value = paymentName;
+        }
+    }
+
+    function closeEditPayment(divId) {
+        var div = document.getElementById(divId);
+        div.style.display = "none";
+    }
 
 </script>
 
