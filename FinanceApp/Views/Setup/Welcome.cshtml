@@ -114,10 +114,25 @@
 
 <div class="payment-setup" id="showPayment" style="display:none">
     <button onclick="closeEditPayment('showPayment')" class="btn btn-secondary mt-2 close-btn">Close</button>
-
-    <h2>Payment Name: <span id="paymentName"></span></h2>
-    <h2>Payment Date: <span id="paymentDate"></span></h2>
-    <h2>Payment Frequency: <span id="paymentFreq"></span></h2>
+    <h2>Edit a payment</h2>
+    <form asp-action="EditPayment" asp-controller="Profile" method="post">
+        <label for="payment-name">Payment Name</label>
+        <input type="text" asp-for="PaymentName" class="form-control" id="paymentName" readonly />
+        <label for="payment-total">Payment Total</label>
+        <input type="text" asp-for="PaymentTotal" class="form-control" id="paymentTotal" readonly />
+        <label for="payment-date">Payment Date</label>
+        <input type="date" asp-for="PaymentDate" class="form-control" id="paymentDate" readonly />
+        <label for="payment-freq">Payment Frequency</label>
+        <select asp-for="PaymentFreq" class="form-control" id="paymentFreq" disabled>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+            <option value="Yearly">Yearly</option>
+        </select>
+        <input type="hidden" asp-for="Email" />
+        <input type="hidden" asp-for="PaymentId" id="paymentId"/>
+        <button type="submit" class="submitBtn">Submit</button>
+    </form>
 </div>
 
 <div id="calendar"></div>
@@ -174,7 +189,7 @@
         return newDateString;
     }
 
-    function generateEvents(paymentDate, paymentTitle, paymentFreq, paymentId) {
+    function generateEvents(paymentDate, paymentTitle, paymentFreq, paymentId, paymentTotal) {
         var startDate = paymentDate;
 
         if (paymentFreq === "Monthly") {
@@ -182,9 +197,12 @@
                 events.push({
                     title: paymentTitle,
                     start: startDate,
-                    freq: paymentFreq,
-                    paymentid: paymentId,
-                    allDay: true 
+                    allDay: true,
+                    extendedProps: {
+                        freq: paymentFreq,
+                        paymentid: paymentId,
+                        total: paymentTotal
+                    }
                 });
 
                 startDate = incrementMonth(startDate);
@@ -194,16 +212,24 @@
                 title: paymentTitle,
                 start: paymentDate,
                 startRecur: paymentDate,
-                endRecur: "2099-01-01"
+                endRecur: "2099-01-01",
+                extendedProps: {
+                    freq: paymentFreq,
+                    paymentid: paymentId,
+                    total: paymentTotal
+                }
             });
         } else if (paymentFreq === "Weekly") {
             for (var i = 0; i < 150; i++) {
                 events.push({
                     title: paymentTitle,
                     start: startDate,
-                    freq: paymentFreq,
-                    paymentid: paymentId,
-                    allDay: true 
+                    allDay: true,
+                        extendedProps: {
+                        freq: paymentFreq,
+                        paymentid: paymentId,
+                        total: paymentTotal
+                    }
                 });
 
                 startDate = incrementWeek(startDate);
@@ -212,10 +238,13 @@
             for (var i = 0; i < 15; i++) {
                 events.push({
                     title: paymentTitle,
-                    start: startDate,
-                    freq: paymentFreq,
-                    paymentid: paymentId,
-                    allDay: true 
+                    start: startDate,   
+                    allDay: true,
+                    extendedProps: {
+                        freq: paymentFreq,
+                        paymentid: paymentId,
+                        total: paymentTotal
+                    }
                 });
 
                 startDate = incrementYear(startDate);
@@ -224,8 +253,11 @@
             events.push({
                 title: paymentTitle,
                 start: paymentDate,
-                freq: paymentFreq,
-                paymentid: paymentId,
+                extendedProps: {
+                    freq: paymentFreq,
+                    paymentid: paymentId,
+                    total: paymentTotal
+                }
             })
         }
     }
@@ -233,7 +265,7 @@
     @foreach (var payment in ViewBag.Payments)
     {
         <text>
-            generateEvents("@payment.PaymentDate", "@payment.PaymentName", "@payment.PaymentFreq", "@payment.PaymentId");
+            generateEvents("@payment.PaymentDate", "@payment.PaymentName", "@payment.PaymentFreq", "@payment.PaymentId", "@payment.PaymentTotal");
         </text>
     }
 
@@ -243,25 +275,32 @@
                 initialView: 'dayGridMonth',
                 events: events,
                 eventClick: function (info) {
-                    showPayment(info.event.start, info.event.title, info.event.freq, info.event.paymentid);
-                    console.log(info.event.start, info.event.title, info.event.freq, info.event.paymentid);
+                    showPayment(info.event.start, info.event.title, info.event.extendedProps.freq, info.event.extendedProps.paymentid, info.event.extendedProps.total);
+                    console.log(info.event.start, info.event.title, info.event.extendedProps.freq, info.event.extendedProps.paymentid, info.event.extendedProps.total);
                 }
             });
             calendar.render();
         });
 
-    function showPayment(paymentDate, paymentName, paymentFreq, paymentId) {
-        console.log(paymentDate, paymentName, paymentFreq);
+    function showPayment(paymentDate, paymentName, paymentFreq, paymentId, paymentTotal) {
+        var formattedDate = paymentDate.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        console.log(formattedDate, paymentName, paymentFreq);
         var div = document.getElementById("showPayment");
         var name = document.getElementById("paymentName");
-        var paymentDate = document.getElementById("paymentDate");
-        var paymentFreq = document.getElementById("paymentFreq");
+        var date = document.getElementById("paymentDate");
+        var freq = document.getElementById("paymentFreq");
+        var id = document.getElementById("paymentId");
+        var total = document.getElementById("paymentTotal");
 
         if (div.style.display === "block") {
             div.style.display = "none";
         } else {
             div.style.display = "block";
             name.value = paymentName;
+            date.value = formattedDate;
+            freq.value = paymentFreq;
+            id.value = paymentId;
+            total.value = paymentTotal;
         }
     }
 
