@@ -59,15 +59,15 @@
                                 <label for="payment-name">Payment Name</label>
                                 <input type="text" asp-for="PaymentName" class="form-control" value="@payment.PaymentName"/>
                                 <label for="payment-total">Payment Total</label>
-                                <input type="text" asp-for="PaymentTotal" class="form-control" value="@payment.PaymentTotal"/>
+                                <input type="number" asp-for="PaymentTotal" class="form-control" value="@payment.PaymentTotal"/>
                                 <label for="payment-date">Payment Date</label>
                                 <input type="date" asp-for="PaymentDate" class="form-control" value="@payment.PaymentDate"/>
                                 <label for="payment-freq">Payment Frequency</label>
                                 <select asp-for="PaymentFreq" class="form-control">
-                                    <option value="Daily" selected="@payment.PaymentFreq == "Daily"">Daily</option>
-                                    <option value="Weekly" selected="@payment.PaymentFreq == "Weekly"">Weekly</option>
-                                    <option value="Monthly" selected="@payment.PaymentFreq == "Monthly"">Monthly</option>
-                                    <option value="Yearly" selected="@payment.PaymentFreq == "Yearly"">Yearly</option>
+                                    <option>Daily</option>
+                                    <option>Weekly</option>
+                                    <option>Monthly</option>
+                                    <option>Yearly</option>
                                 </select>
                                 <input type="hidden" asp-for="Email" value="@payment.Email" />
                                 <input type="hidden" asp-for="PaymentId" value="@payment.PaymentId" />

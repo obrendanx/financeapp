@@ -81,7 +81,7 @@ namespace FinanceApp.Controllers
         }
         
         [HttpPost]
-        public ActionResult EditPayment(Payments model)
+        public async Task<ActionResult> EditPayment(Payments model)
         {
             try
             {
@@ -98,12 +98,13 @@ namespace FinanceApp.Controllers
                             command.CommandType = CommandType.StoredProcedure;
                             command.Parameters.AddWithValue("@Email", model.Email);
                             command.Parameters.AddWithValue("@PaymentName", model.PaymentName);
-                            command.Parameters.AddWithValue("@PaymentTotal", model.PaymentTotal);
+                            command.Parameters.AddWithValue("@PaymentTotal", SqlDbType.Decimal).Value = model.PaymentTotal;
                             command.Parameters.AddWithValue("@PaymentDate", model.PaymentDate);
                             command.Parameters.AddWithValue("@PaymentFreq", model.PaymentFreq);
                             command.Parameters.AddWithValue("@PaymentID", model.PaymentId);
 
-                            command.ExecuteNonQueryAsync();
+                            int rowsAffected = await command.ExecuteNonQueryAsync();
+                            Console.WriteLine($"{rowsAffected} rows updated.");
                         }
                     }
                 }
