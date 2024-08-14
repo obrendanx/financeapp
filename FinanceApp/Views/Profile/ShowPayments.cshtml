@@ -50,29 +50,29 @@
                     }
                 </td>
                 <td>
-                        <button onclick="showEditPayment('editPayment-@payment.PaymentId')" class="btn btn-primary">Edit</button>
+                        <button onclick="showEditPayment('@payment.PaymentId')" class="btn btn-primary">Edit</button>
                     
-                        <div class="payment-setup" id="editPayment-@payment.PaymentId" style="display:none">
-                            <button onclick="closeEditPayment('editPayment-@payment.PaymentId')" class="btn btn-secondary mt-2 close-btn">Close</button>
-                        <h2>Edit a payment</h2>
-                        <form asp-action="EditPayment" asp-controller="Profile" method="post">
-                            <label for="payment-name">Payment Name</label>
-                            <input type="text" asp-for="PaymentName" class="form-control" value="@payment.PaymentName"/>
-                            <label for="payment-total">Payment Total</label>
-                            <input type="text" asp-for="PaymentTotal" class="form-control" value="@payment.PaymentTotal"/>
-                            <label for="payment-date">Payment Date</label>
-                            <input type="date" asp-for="PaymentDate" class="form-control" value="@payment.PaymentDate"/>
-                            <label for="payment-freq">Payment Frequency</label>
-                            <select asp-for="PaymentFreq" class="form-control">
-                                <option>Daily</option>
-                                <option>Weekly</option>
-                                <option>Monthly</option>
-                                <option>Yearly</option>
-                            </select>
-                            <input type="hidden" asp-for="Email" value="@payment.Email" />
-                            <input type="hidden" asp-for="PaymentId" value="@payment.PaymentId" />
-                            <button type="submit" class="submitBtn">Submit</button>
-                        </form>
+                        <div class="payment-setup" id="@payment.PaymentId" style="display:none">
+                            <button onclick="closeEditPayment('@payment.PaymentId')" class="btn btn-secondary mt-2 close-btn">Close</button>
+                            <h2>Edit a payment</h2>
+                            <form asp-action="EditPayment" asp-controller="Profile" method="post">
+                                <label for="payment-name">Payment Name</label>
+                                <input type="text" asp-for="PaymentName" class="form-control" value="@payment.PaymentName"/>
+                                <label for="payment-total">Payment Total</label>
+                                <input type="number" asp-for="PaymentTotal" class="form-control" value="@payment.PaymentTotal"/>
+                                <label for="payment-date">Payment Date</label>
+                                <input type="date" asp-for="PaymentDate" class="form-control" value="@payment.PaymentDate"/>
+                                <label for="payment-freq">Payment Frequency</label>
+                                <select asp-for="PaymentFreq" class="form-control">
+                                    <option>Daily</option>
+                                    <option>Weekly</option>
+                                    <option>Monthly</option>
+                                    <option>Yearly</option>
+                                </select>
+                                <input type="hidden" asp-for="Email" value="@payment.Email" />
+                                <input type="hidden" asp-for="PaymentId" value="@payment.PaymentId" />
+                                <button type="submit" class="submitBtn">Submit</button>
+                            </form>
                     </div>
                 </td>
             </tr>

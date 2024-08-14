@@ -6,6 +6,7 @@
 *@
 @{
     var userEmail = User.FindFirstValue(ClaimTypes.Email);
+    List<Payments> payments = ViewBag.Payments;
 }
 
 <script>
@@ -61,8 +62,8 @@
 }
 
 <div>
-    <button onclick="showPaymentSetup('paymentSetup')" class="btn btn-primary mb-1">Add Monthly Payment</button><br/>
-    <button onclick="showPaySetup('addPayment')" class="btn btn-primary mb-1">Add Payment</button><br/>
+    <button onclick="showPaymentSetup('paymentSetup')" class="btn btn-primary mb-1">Add Monthly Payment</button>
+    <button onclick="showPaySetup('addPayment')" class="btn btn-primary mb-1">Add Payment</button>
     <button onclick="showFundsSetup('addFunds')" class="btn btn-primary">Add Funds</button>
 
     <div class="payment-setup" id="paymentSetup" style="display:none">
@@ -81,6 +82,7 @@
                 <option>Weekly</option>
                 <option>Monthly</option>
                 <option>Yearly</option>
+                <option>One Time Payment</option>
             </select>
             <input type="hidden" asp-for="Email" value="@userEmail" />
             <button type="submit" class="submitBtn">Submit</button>
@@ -110,21 +112,220 @@
         </div>
 </div>
 
+<div class="payment-setup" id="showPayment" style="display:none">
+    <button onclick="closeEditPayment('showPayment')" class="btn btn-secondary mt-2 close-btn">Close</button>
+    <button onclick="editPayment()" class="btn btn-primary mt-2 mb-2">Edit a Payment</button>
+    <form asp-action="EditPayment" asp-controller="Profile" method="post">
+        <label for="payment-name">Payment Name</label>
+        <input type="text" asp-for="PaymentName" class="form-control" id="paymentName" readonly />
+        <label for="payment-total">Payment Total</label>
+        <input type="text" asp-for="PaymentTotal" class="form-control" id="paymentTotal" readonly />
+        <label for="payment-date">Payment Date</label>
+        <input type="date" asp-for="PaymentDate" class="form-control" id="paymentDate" readonly />
+        <label for="payment-freq">Payment Frequency</label>
+        <select asp-for="PaymentFreq" class="form-control" id="paymentFreq" disabled>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+            <option value="Yearly">Yearly</option>
+        </select>
+        <input type="hidden" asp-for="Email" value="@userEmail" />
+        <input type="hidden" asp-for="PaymentId" id="paymentId"/>
+        <button type="submit" class="submitBtn" id="submitBtn" disabled>Submit</button>
+    </form>
+</div>
+
 <div id="calendar"></div>
 
-@section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.10.1/main.min.css" rel="stylesheet" />
+<script>
+    var events = [];
 
-    <script>
+    function incrementMonth(dateString) {
+        var year = parseInt(dateString.substring(0, 4));
+        var month = parseInt(dateString.substring(5, 7));
+
+        month++;
+
+        if (month > 12) {
+            month = 1;
+            year++;
+        }
+
+        var newMonth = month < 10 ? '0' + month : month;
+        var newDateString = year + '-' + newMonth + dateString.substring(7);
+        return newDateString;
+    }
+
+    function incrementWeek(dateString) {
+        var parts = dateString.split('-');
+        var year = parseInt(parts[0]);
+        var month = parseInt(parts[1]) - 1; 
+        var day = parseInt(parts[2]);
+
+        var startDate = new Date(year, month, day);
+        startDate.setDate(startDate.getDate() + 7); 
+
+        var newYear = startDate.getFullYear();
+        var newMonth = startDate.getMonth() + 1; 
+        var newDay = startDate.getDate();
+
+        newMonth = newMonth < 10 ? '0' + newMonth : newMonth;
+        newDay = newDay < 10 ? '0' + newDay : newDay;
+
+        var newDateString = newYear + '-' + newMonth + '-' + newDay;
+        return newDateString;
+    }
+
+    function incrementYear(dateString) {
+        var parts = dateString.split('-');
+        var year = parseInt(parts[0]) + 1; 
+        var month = parseInt(parts[1]);
+        var day = parseInt(parts[2]);
+
+        var newMonth = month < 10 ? '0' + month : month;
+        var newDay = day < 10 ? '0' + day : day;
+
+        var newDateString = year + '-' + newMonth + '-' + newDay;
+        return newDateString;
+    }
+
+    function generateEvents(paymentDate, paymentTitle, paymentFreq, paymentId, paymentTotal) {
+        var startDate = paymentDate;
+
+        if (paymentFreq === "Monthly") {
+            for (var i = 0; i < 24; i++) {
+                events.push({
+                    title: paymentTitle,
+                    start: startDate,
+                    allDay: true,
+                    color: 'red',
+                    extendedProps: {
+                        freq: paymentFreq,
+                        paymentid: paymentId,
+                        total: paymentTotal
+                    }
+                });
+
+                startDate = incrementMonth(startDate);
+            }
+        } else if (paymentFreq === "Daily") {
+            events.push({
+                title: paymentTitle,
+                start: paymentDate,
+                startRecur: paymentDate,
+                endRecur: "2099-01-01",
+                color: 'green',
+                extendedProps: {
+                    freq: paymentFreq,
+                    paymentid: paymentId,
+                    total: paymentTotal
+                }
+            });
+        } else if (paymentFreq === "Weekly") {
+            for (var i = 0; i < 150; i++) {
+                events.push({
+                    title: paymentTitle,
+                    start: startDate,
+                    color: 'orange',
+                    allDay: true,
+                        extendedProps: {
+                        freq: paymentFreq,
+                        paymentid: paymentId,
+                        total: paymentTotal
+                    }
+                });
+
+                startDate = incrementWeek(startDate);
+            }
+        } else if (paymentFreq === "Yearly") {
+            for (var i = 0; i < 15; i++) {
+                events.push({
+                    title: paymentTitle,
+                    start: startDate,   
+                    allDay: true,
+                    color: 'purple',
+                    extendedProps: {
+                        freq: paymentFreq,
+                        paymentid: paymentId,
+                        total: paymentTotal
+                    }
+                });
+
+                startDate = incrementYear(startDate);
+            }
+        } else {
+            events.push({
+                title: paymentTitle,
+                start: paymentDate,
+                extendedProps: {
+                    freq: paymentFreq,
+                    paymentid: paymentId,
+                    total: paymentTotal
+                }
+            })
+        }
+    }
+
+    @foreach (var payment in ViewBag.Payments)
+    {
+        <text>
+            generateEvents("@payment.PaymentDate", "@payment.PaymentName", "@payment.PaymentFreq", "@payment.PaymentId", "@payment.PaymentTotal");
+        </text>
+    }
 
         document.addEventListener('DOMContentLoaded', function () {
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth'
+                initialView: 'dayGridMonth',
+                events: events,
+                eventClick: function (info) {
+                    showPayment(info.event.start, info.event.title, info.event.extendedProps.freq, info.event.extendedProps.paymentid, info.event.extendedProps.total);
+                    console.log(info.event.start, info.event.title, info.event.extendedProps.freq, info.event.extendedProps.paymentid, info.event.extendedProps.total);
+                }
             });
             calendar.render();
         });
 
-    </script>
-}
+    function showPayment(paymentDate, paymentName, paymentFreq, paymentId, paymentTotal) {
+        var formattedDate = paymentDate.toLocaleDateString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+        console.log(formattedDate, paymentName, paymentFreq);
+        var div = document.getElementById("showPayment");
+        var name = document.getElementById("paymentName");
+        var date = document.getElementById("paymentDate");
+        var freq = document.getElementById("paymentFreq");
+        var id = document.getElementById("paymentId");
+        var total = document.getElementById("paymentTotal");
+
+        if (div.style.display === "block") {
+            div.style.display = "none";
+        } else {
+            div.style.display = "block";
+            name.value = paymentName;
+            date.value = formattedDate;
+            freq.value = paymentFreq;
+            id.value = paymentId;
+            total.value = paymentTotal;
+        }
+    }
+
+    function closeEditPayment(divId) {
+        var div = document.getElementById(divId);
+        div.style.display = "none";
+    }
+
+    function editPayment() {
+        var name = document.getElementById("paymentName");
+        var date = document.getElementById("paymentDate");
+        var freq = document.getElementById("paymentFreq");
+        var total = document.getElementById("paymentTotal");
+        var submit = document.getElementById("submitBtn");
+
+        name.readOnly = !name.readOnly;
+        date.readOnly = !date.readOnly;
+        total.readOnly = !total.readOnly;
+        freq.disabled = !freq.disabled;
+        submit.disabled = !submit.disabled;
+    }
+
+</script>
+
