@@ -1,4 +1,5 @@
 ﻿using FinanceApp.Models;
+using FinanceApp.DataAccessLayer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -13,100 +14,44 @@ namespace FinanceApp.Controllers
     public class ProfileController : Controller
     {
         private readonly UserDbContext _dbContext;
+        private readonly DatabaseMethods _dbMethods;
 
-        public ProfileController(UserDbContext dbContext)
+        public ProfileController(UserDbContext dbContext, DatabaseMethods dbMethod)
         {
             _dbContext = dbContext;
+            _dbMethods = dbMethod;
         }
 
         public IActionResult ShowPayments()
         {
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            //List<Payments> payments = _dbMethods.GetAllPayments(userEmail);
 
-            var connectionString = _dbContext.Database.GetConnectionString();
-
-            var sqlQuery = "EXECUTE GetAllPayments @Email";
-
-            List<Payments> payments = new List<Payments>();
-
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-
-                using (var command = new SqlCommand(sqlQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@Email", userEmail);
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            Payments payment = new Payments
-                            {
-                                PaymentId = Convert.ToInt32(reader["PaymentId"]),
-                                Email = Convert.ToString(reader["Email"]),
-                                PaymentName = Convert.ToString(reader["PaymentName"]),
-                                PaymentTotal = Convert.ToDecimal(reader["PaymentTotal"]),
-                                PaymentDate = Convert.ToString(reader["PaymentDate"]),
-                                PaymentFreq = Convert.ToString(reader["PaymentFreq"]),
-                            };
-                            payments.Add(payment);
-                        }
-                    }
-                }
-
-                ViewBag.Payments = payments;
-            }
+            //ViewBag.Payments = payments;
 
             return View();
         }
 
         [HttpPost]
-        public ActionResult RemovePayment(int paymentId)
+        public IActionResult RemovePayment(int paymentId)
         {
-            var connectionString = _dbContext.Database.GetConnectionString();
-
-            using (var connection = new SqlConnection(connectionString))
+            if (_dbMethods.RemovePayment(paymentId))
             {
-                connection.Open();
-                using (var command = new SqlCommand("RemovePayment", connection))
-                {
-                    command.CommandType = System.Data.CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@PaymentId", paymentId);
-                    command.ExecuteNonQuery();
-                }
+                // Redirect back to the Index action after removing the payment
+                return RedirectToAction("ShowPayments");   
             }
-
-            // Redirect back to the Index action after removing the payment
-            return RedirectToAction("ShowPayments");
+            
+            return RedirectToAction("ShowPayments");  
         }
         
         [HttpPost]
-        public async Task<ActionResult> EditPayment(Payments model)
+        public IActionResult EditPayment(Payments model)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    // Insert data into the UserFinance table
-                    var connectionString = _dbContext.Database.GetConnectionString();
-                    using (var connection = new SqlConnection(connectionString))
-                    {
-                        connection.Open();
-
-                        using (var command = new SqlCommand("UpdatePayment", connection))
-                        {
-                            command.CommandType = CommandType.StoredProcedure;
-                            command.Parameters.AddWithValue("@Email", model.Email);
-                            command.Parameters.AddWithValue("@PaymentName", model.PaymentName);
-                            command.Parameters.AddWithValue("@PaymentTotal", SqlDbType.Decimal).Value = model.PaymentTotal;
-                            command.Parameters.AddWithValue("@PaymentDate", model.PaymentDate);
-                            command.Parameters.AddWithValue("@PaymentFreq", model.PaymentFreq);
-                            command.Parameters.AddWithValue("@PaymentID", model.PaymentId);
-
-                            int rowsAffected = await command.ExecuteNonQueryAsync();
-                            Console.WriteLine($"{rowsAffected} rows updated.");
-                        }
-                    }
+                     _dbMethods.EditPayment(model);
                 }
             }
             catch(Exception ex)

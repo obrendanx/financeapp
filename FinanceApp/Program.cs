@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using FinanceApp;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using FinanceApp.Controllers;
+using FinanceApp.DataAccessLayer;
 using Microsoft.AspNetCore.Mvc;
 using YourNamespace.Filters;
 
@@ -44,6 +45,8 @@ builder.Services.PostConfigure<CookieAuthenticationOptions>(IdentityConstants.Ap
     });
 
 //builder.Services.AddHostedService<PaymentProcessingService>();
+
+builder.Services.AddScoped<DatabaseMethods>();
 
 var app = builder.Build();
 

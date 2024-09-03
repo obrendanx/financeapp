@@ -1,12 +1,11 @@
-﻿@model FinanceApp.Models.Payments;
+@model FinanceApp.ViewModels.CalenderPayment
 @using System.Security.Claims;
-@using Microsoft.AspNetCore.Mvc;
+
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
     var userEmail = User.FindFirstValue(ClaimTypes.Email);
-    List<Payments> payments = ViewBag.Payments;
 }
 
 <script>
@@ -56,20 +55,20 @@
 </script>
 
 <h1>Welcome Back!</h1>
-@if (ViewBag.Balance != null)
+@if (Model.Balance != null)
 {
-    <p>Account Balance: @ViewBag.Balance</p>
+    <p>Account Balance: @Model.Balance</p>
 }
 
 <div>
     <button onclick="showPaymentSetup('paymentSetup')" class="btn btn-primary mb-1">Add Monthly Payment</button>
-    <button onclick="showPaySetup('addPayment')" class="btn btn-primary mb-1">Add Payment</button>
-    <button onclick="showFundsSetup('addFunds')" class="btn btn-primary">Add Funds</button>
+    <button onclick="showPaySetup('addFunds')" class="btn btn-primary mb-1">Decrease Balance</button>
+    <button onclick="showFundsSetup('addPayment')" class="btn btn-primary">Increase Balance</button>
 
     <div class="payment-setup" id="paymentSetup" style="display:none">
         <button onclick="closePayment('paymentSetup')" class="btn btn-secondary mt-2 close-btn">Close</button>
         <h2>Add a payment</h2>
-        <form asp-action="" asp-controller="" method="post">
+        <form asp-action="AddNewPayment" asp-controller="Calender" method="post">
             <label for="payment-name">Payment Name</label>
             <input type="text" asp-for="PaymentName" class="form-control" />
             <label for="payment-total">Payment Total</label>
@@ -91,22 +90,20 @@
     
     <div class="payment" id="addPayment" style="display:none">
         <button onclick="closePay('addPayment')" class="btn btn-secondary mt-2 close-btn">Close</button>
-        <h2>Add a single payment</h2>
-        <form asp-action="" asp-controller="" method="post">
+        <h2>Add some money to your total balance</h2>
+        <form asp-action="IncreaseBalance" asp-controller="Calender" method="post">
             <label>Payment Total</label>
-            <input type="text" name="PaymentAmount" class="form-control" />
-            <input type="hidden" name="Email" value="@userEmail" />
+            <input type="text" name="PaymentIncrease" asp-for="PaymentIncrease" class="form-control" />
             <button type="submit" class="submitBtn">Add Payment</button>
         </form>
     </div>
     
     <div class="payment" id="addFunds" style="display:none">
             <button onclick="closeFunds('addFunds')" class="btn btn-secondary mt-2 close-btn">Close</button>
-            <h2>Add some funds</h2>
-            <form asp-action="" asp-controller="" method="post">
+            <h2>Take some money from your total balance</h2>
+            <form asp-action="DecreaseBalance" asp-controller="Calender" method="post">
                 <label>Payment Total</label>
-                <input type="text" name="PaymentAmount" class="form-control" />
-                <input type="hidden" name="Email" value="@userEmail" />
+                <input type="text" name="PaymentDecrease" asp-for="PaymentDecrease" class="form-control" />
                 <button type="submit" class="submitBtn">Add Funds</button>
             </form>
         </div>
@@ -115,7 +112,7 @@
 <div class="payment-setup" id="showPayment" style="display:none">
     <button onclick="closeEditPayment('showPayment')" class="btn btn-secondary mt-2 close-btn">Close</button>
     <button onclick="editPayment()" class="btn btn-primary mt-2 mb-2">Edit a Payment</button>
-    <form asp-action="EditPayment" asp-controller="Profile" method="post">
+    <form asp-action="EditPayment" asp-controller="Calender" method="post">
         <label for="payment-name">Payment Name</label>
         <input type="text" asp-for="PaymentName" class="form-control" id="paymentName" readonly />
         <label for="payment-total">Payment Total</label>
@@ -191,6 +188,7 @@
 
     function generateEvents(paymentDate, paymentTitle, paymentFreq, paymentId, paymentTotal) {
         var startDate = paymentDate;
+        console.log(startDate);
 
         if (paymentFreq === "Monthly") {
             for (var i = 0; i < 24; i++) {
@@ -202,7 +200,8 @@
                     extendedProps: {
                         freq: paymentFreq,
                         paymentid: paymentId,
-                        total: paymentTotal
+                        total: paymentTotal,
+                        date: paymentDate
                     }
                 });
 
@@ -218,7 +217,8 @@
                 extendedProps: {
                     freq: paymentFreq,
                     paymentid: paymentId,
-                    total: paymentTotal
+                    total: paymentTotal,
+                    date: paymentDate
                 }
             });
         } else if (paymentFreq === "Weekly") {
@@ -231,7 +231,8 @@
                         extendedProps: {
                         freq: paymentFreq,
                         paymentid: paymentId,
-                        total: paymentTotal
+                        total: paymentTotal,
+                        date: paymentDate
                     }
                 });
 
@@ -247,7 +248,8 @@
                     extendedProps: {
                         freq: paymentFreq,
                         paymentid: paymentId,
-                        total: paymentTotal
+                        total: paymentTotal,
+                        date: paymentDate
                     }
                 });
 
@@ -260,13 +262,14 @@
                 extendedProps: {
                     freq: paymentFreq,
                     paymentid: paymentId,
-                    total: paymentTotal
+                    total: paymentTotal,
+                    date: paymentDate
                 }
             })
         }
     }
 
-    @foreach (var payment in ViewBag.Payments)
+    @foreach (var payment in Model.Payments)
     {
         <text>
             generateEvents("@payment.PaymentDate", "@payment.PaymentName", "@payment.PaymentFreq", "@payment.PaymentId", "@payment.PaymentTotal");
@@ -287,7 +290,14 @@
         });
 
     function showPayment(paymentDate, paymentName, paymentFreq, paymentId, paymentTotal) {
-        var formattedDate = paymentDate.toLocaleDateString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+        console.log(paymentDate);
+        // Ensure paymentDate is a Date object; convert if necessary
+        if (typeof paymentDate === 'string' || paymentDate instanceof String) {
+            paymentDate = new Date(paymentDate); // Convert string to Date object if needed
+        }
+        
+        // Format paymentDate to 'YYYY-MM-DD' for the date input
+        var formattedDate = paymentDate.toISOString().split('T')[0];
         console.log(formattedDate, paymentName, paymentFreq);
         var div = document.getElementById("showPayment");
         var name = document.getElementById("paymentName");
@@ -328,4 +338,5 @@
     }
 
 </script>
+
 

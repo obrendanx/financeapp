@@ -1,0 +1,19 @@
+@model FinanceApp.ViewModels.Payments
+
+<form asp-action="EditPayment" asp-controller="Profile" method="post">
+    <label for="payment-name">Payment Name</label>
+    <input type="text" asp-for="@Model.PaymentName" class="form-control" value="model.PaymentName"/>
+    <label for="payment-total">Payment Total</label>
+    <input type="number" asp-for="@Model.PaymentTotal" class="form-control" value="model.PaymentTotal"/>
+    <label for="payment-date">Payment Date</label>
+    <input type="date" asp-for="@Model.PaymentDate" class="form-control" value="model.PaymentDate"/>
+    <label for="payment-freq">Payment Frequency</label>
+    <select asp-for="@Model.PaymentFreq" class="form-control">
+        <option>Daily</option>
+        <option>Weekly</option>
+        <option>Monthly</option>
+        <option>Yearly</option>
+    </select>
+    <input type="hidden" asp-for="@Model.PaymentId" value="model.PaymentId" />
+    <button type="submit" class="submitBtn">Submit</button>
+</form>

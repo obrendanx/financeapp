@@ -1,0 +1,7 @@
+@model FinanceApp.ViewModels.Payments
+
+<form asp-action="" asp-controller="Setup" method="post">
+    <label>Payment Total</label>
+    <input type="text" asp-for="@Model.PaymentAmount" name="PaymentAmount" class="form-control" />
+    <button type="submit" class="submitBtn">Add Payment</button>
+</form>

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using YourNamespace.Filters;
 using FinanceApp.Models;
 using System.Security.Claims;
+using FinanceApp.DataAccessLayer;
 
 namespace FinanceApp.Controllers
 {
@@ -14,20 +15,22 @@ namespace FinanceApp.Controllers
     public class SetupController : Controller
     {
         private readonly UserDbContext _dbContext;
+        private readonly DatabaseMethods _dbMethods;
 
-        public SetupController(UserDbContext dbContext)
+        public SetupController(UserDbContext dbContext, DatabaseMethods dbMethod)
         {
             _dbContext = dbContext;
+            _dbMethods = dbMethod;
         }
 
         public async Task<IActionResult> AccountSetup()
         {
             var userEmail = User.Identity.Name;
-            var isSetup = await GetSetupStatus(userEmail);
+            var isSetup = GetSetupStatus(userEmail);
 
             if (isSetup)
             {
-                return RedirectToAction("Welcome", "Setup");
+                return RedirectToAction("Index", "Calender");
             }
 
             return View();
@@ -35,7 +38,7 @@ namespace FinanceApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AccountSetup(AccountSetup model)
+        public IActionResult AccountSetup(AccountSetup model)
         {
             if (ModelState.IsValid)
             {
@@ -43,26 +46,11 @@ namespace FinanceApp.Controllers
                 var userEmail = User.FindFirstValue(ClaimTypes.Email);
 
                 // Update the IsSetup column in the UserAccounts table
-                await UpdateUserAccountIsSetup(userEmail);
+                UpdateUserAccountIsSetup(userEmail);
 
-                // Insert data into the UserFinance table
-                var connectionString = _dbContext.Database.GetConnectionString();
-                using (var connection = new SqlConnection(connectionString))
-                {
-                    await connection.OpenAsync();
+                _dbMethods.InsertUserFinance(model);
 
-                    using (var command = new SqlCommand("InsertUserFinance", connection))
-                    {
-                        command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@Email", model.Email);
-                        command.Parameters.AddWithValue("@AccountName", model.AccountName);
-                        command.Parameters.AddWithValue("@AccountBalance", model.AccountBalance);
-
-                        await command.ExecuteNonQueryAsync();
-                    }
-                }
-
-                return RedirectToAction("Welcome", "Setup");
+                return RedirectToAction("Index", "Calender");
             }
 
             return View(model);
@@ -70,106 +58,29 @@ namespace FinanceApp.Controllers
 
         private async Task UpdateUserAccountIsSetup(string email)
         {
-            var connectionString = _dbContext.Database.GetConnectionString();
-
-            using (var connection = new SqlConnection(connectionString))
-            {
-                await connection.OpenAsync();
-
-                using (var command = new SqlCommand("UpdateUserAccountIsSetup", connection))
-                {
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@Email", email);
-
-                    await command.ExecuteNonQueryAsync();
-                }
-            }
+            _dbMethods.UpdateUserAccountIsSetup(email);
         }
         
-        public IActionResult Welcome()
+        /*public IActionResult Welcome()
         {
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
 
-            var connectionString = _dbContext.Database.GetConnectionString();
-
-            var sqlQuery = "EXECUTE FetchBalance @Email";
-
-            decimal balance = 0;
-
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-
-                using (var command = new SqlCommand(sqlQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@Email", userEmail);
-                    var result = command.ExecuteScalar();
-                    if (result != null && decimal.TryParse(result.ToString(), out balance))
-                    {
-                        ViewBag.Balance = balance;
-                    }
-                }
-            }
-
-            var sqlQuery2 = "EXECUTE GetAllPayments @Email";
-
-            List<Payments> payments = new List<Payments>();
-
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-
-                using (var command = new SqlCommand(sqlQuery2, connection))
-                {
-                    command.Parameters.AddWithValue("@Email", userEmail);
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            Payments payment = new Payments
-                            {
-                                PaymentId = Convert.ToInt32(reader["PaymentId"]),
-                                Email = Convert.ToString(reader["Email"]),
-                                PaymentName = Convert.ToString(reader["PaymentName"]),
-                                PaymentTotal = Convert.ToDecimal(reader["PaymentTotal"]),
-                                PaymentDate = Convert.ToString(reader["PaymentDate"]),
-                                PaymentFreq = Convert.ToString(reader["PaymentFreq"]),
-                            };
-                            payments.Add(payment);
-                        }
-                    }
-                }
-
-                ViewBag.Payments = payments;
-            }
-
+            decimal balance = _dbMethods.FetchBalance(userEmail);
+            ViewBag.Balance = balance;
+            
+            List<Payments> payments = _dbMethods.GetAllPayments(userEmail);
+            ViewBag.Payments = payments;
+            
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Welcome(Payments model)
+        public IActionResult Welcome(Payments model)
         {
             if (ModelState.IsValid)
             {
-                // Insert data into the UserFinance table
-                var connectionString = _dbContext.Database.GetConnectionString();
-                using (var connection = new SqlConnection(connectionString))
-                {
-                    await connection.OpenAsync();
-
-                    using (var command = new SqlCommand("InsertPayment", connection))
-                    {
-                        command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@Email", model.Email);
-                        command.Parameters.AddWithValue("@PaymentName", model.PaymentName);
-                        command.Parameters.AddWithValue("@PaymentTotal", model.PaymentTotal);
-                        command.Parameters.AddWithValue("@PaymentDate", model.PaymentDate);
-                        command.Parameters.AddWithValue("@PaymentFreq", model.PaymentFreq);
-
-                        await command.ExecuteNonQueryAsync();
-                    }
-                }
+                _dbMethods.InsertPayment(model);
 
                 return RedirectToAction("Welcome", "Setup");
             }
@@ -185,20 +96,7 @@ namespace FinanceApp.Controllers
             {
                 // Insert data into the UserFinance table
                 var userEmail = User.FindFirstValue(ClaimTypes.Email);
-                var connectionString = _dbContext.Database.GetConnectionString();
-                using (var connection = new SqlConnection(connectionString))
-                {
-                    await connection.OpenAsync();
-
-                    using (var command = new SqlCommand("DeductPaymentAmount", connection))
-                    {
-                        command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@Email", Email);
-                        command.Parameters.AddWithValue("@PaymentAmount", paymentAmount);
-
-                        await command.ExecuteNonQueryAsync();
-                    }
-                }
+                _dbMethods.DeductPayment(paymentAmount, Email);
 
                 return RedirectToAction("Welcome", "Setup");
             }
@@ -214,50 +112,17 @@ namespace FinanceApp.Controllers
             {
                 // Insert data into the UserFinance table
                 var userEmail = User.FindFirstValue(ClaimTypes.Email);
-                var connectionString = _dbContext.Database.GetConnectionString();
-                using (var connection = new SqlConnection(connectionString))
-                {
-                    await connection.OpenAsync();
-
-                    using (var command = new SqlCommand("IncreaseBalance", connection))
-                    {
-                        command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@Email", Email);
-                        command.Parameters.AddWithValue("@PaymentAmount", paymentAmount);
-
-                        await command.ExecuteNonQueryAsync();
-                    }
-                }
+                _dbMethods.IncreaseBalance(paymentAmount, Email);
 
                 return RedirectToAction("Welcome", "Setup");
             }
 
             return RedirectToAction("Welcome", "Setup");
-        }
+        }*/
 
-        private async Task<bool> GetSetupStatus(string email)
+        public bool GetSetupStatus(string email)
         {
-            var connectionString = _dbContext.Database.GetConnectionString();
-
-            using (var connection = new SqlConnection(connectionString))
-            {
-                await connection.OpenAsync();
-
-                using (var command = new SqlCommand("GetUserSetupStatus", connection))
-                {
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@Email", email);
-
-                    var result = await command.ExecuteScalarAsync();
-
-                    if (result != null && result != DBNull.Value)
-                    {
-                        return (bool)result;
-                    }
-
-                    return false;
-                }
-            }
+            return _dbMethods.GetUserSetupStatus(email);
         }
     }
 }
