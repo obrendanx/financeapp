@@ -15,7 +15,11 @@
             <span asp-validation-for="Username" class="text-danger"></span>
             
             <input type="password" asp-for="Password" class="form-control" placeholder="Please enter a password"/>
-            <span asp-validation-for="Password" class="text-danger"></span><br/>
+            <span asp-validation-for="Password" class="text-danger"></span>
+
+            <input type="text" asp-for="Email" class="form-control" placeholder="Please enter a valid email address"/>
+            <span asp-validation-for="Email" class="text-danger"></span><br/>
+            
             <input class="btn btn-primary" type="submit" value="Register"/>
         </div>
     </form>

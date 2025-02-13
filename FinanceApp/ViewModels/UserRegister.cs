@@ -14,4 +14,8 @@ public class UserRegister
     [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)(?=.*[A-Z])(?=.*[\W_]).+$",
         ErrorMessage = "Password must contain at least one letter, one number, one uppercase letter, and one symbol.")]
     public string Password { get; set; }
+    
+    [Required(ErrorMessage = "Email is required.")]
+    [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Invalid email format.")]
+    public string Email { get; set; }
 }
