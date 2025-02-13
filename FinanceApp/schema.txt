@@ -1,0 +1,81 @@
+USE ProjectBE;
+
+-- Users Table
+CREATE TABLE Users (
+    UserID INT IDENTITY(1,1) PRIMARY KEY,
+    Username NVARCHAR(50) NOT NULL UNIQUE,
+    [Password] NVARCHAR(255) NOT NULL,
+    Email NVARCHAR(255) NOT NULL
+);
+
+-- UserFinance Table
+CREATE TABLE UserFinance (
+    UserID INT NOT NULL,
+    AccountName NVARCHAR(255) NOT NULL,
+    AccountBalance FLOAT NOT NULL,
+    PRIMARY KEY (UserID, AccountName),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+-- FinanceAccounts Table
+CREATE TABLE FinanceAccounts (
+    UserID INT NOT NULL,
+    IsSetup BIT NOT NULL,
+    PRIMARY KEY (UserID),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+-- Payments Table
+CREATE TABLE Payments (
+    PaymentID INT IDENTITY(1,1) PRIMARY KEY,
+    PaymentName NVARCHAR(255) NOT NULL,
+    PaymentTotal FLOAT NOT NULL,
+    PaymentDate DATETIME NOT NULL,
+    PaymentFreq NVARCHAR(50) NOT NULL,
+    UserID INT NOT NULL,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+CREATE TABLE PlayerPkmCards (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,
+    HasCard BIT NOT NULL,
+    CardName NVARCHAR(255) NOT NULL,
+    CardID INT NOT NULL,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+CREATE TABLE PlayerGames (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,
+    Image NVARCHAR(MAX),  -- Can store large image data or use byte array if necessary
+    GameName NVARCHAR(255) NOT NULL,
+    Platform NVARCHAR(50) NOT NULL,
+    HoursPlayed FLOAT NOT NULL,
+    Rating INT NOT NULL,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+CREATE TABLE DailyTasks (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
+    Week DATETIME NOT NULL,
+    TaskName NVARCHAR(255) NOT NULL,
+    UserID INT NOT NULL,
+    Mon BIT NOT NULL,
+    Tue BIT NOT NULL,
+    Wed BIT NOT NULL,
+    Thur BIT NOT NULL,
+    Fri BIT NOT NULL,
+    Sat BIT NOT NULL,
+    Sun BIT NOT NULL,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+CREATE TABLE Tasks (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
+    Week DATETIME NOT NULL,
+    UserID INT NOT NULL,
+    TaskName NVARCHAR(255) NOT NULL,
+    Completed BIT NOT NULL,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
