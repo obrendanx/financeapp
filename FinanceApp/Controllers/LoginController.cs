@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using FinanceApp.DataAccessLayer;
 using FinanceApp.ViewModels;
 
 namespace FinanceApp.Controllers
@@ -12,15 +13,18 @@ namespace FinanceApp.Controllers
         private readonly SignInManager<IdentityUser> signInManager;
         private readonly UserManager<IdentityUser> userManager;
         private readonly UserDbContext dbContext;
+        private readonly DatabaseMethods _dbMethods;
 
         public LoginController(
             SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager,
-            UserDbContext dbContext)
+            UserDbContext dbContext,
+            DatabaseMethods dbMethod)
         {
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.dbContext = dbContext;
+            _dbMethods = dbMethod;
         }
 
         [HttpGet]
@@ -45,12 +49,17 @@ namespace FinanceApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                return RedirectToAction("Index", "Home");
+                if (_dbMethods.RegisterUser(model))
+                {
+                    return RedirectToAction("Login", "Login");
+                }
             }
             else
             {
                 return View(model);
             }
+
+            return View();
         }
 
         [HttpGet]

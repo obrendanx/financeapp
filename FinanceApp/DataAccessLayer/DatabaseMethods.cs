@@ -1,7 +1,10 @@
 using System.Data;
+using FinanceApp.Helpers;
 using FinanceApp.Models;
+using FinanceApp.ViewModels;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Payments = FinanceApp.Models.Payments;
 
 namespace FinanceApp.DataAccessLayer;
 
@@ -14,6 +17,36 @@ public class DatabaseMethods
     public DatabaseMethods(UserDbContext dbContext)
     {
         _dbContext = dbContext;
+    }
+
+    public bool RegisterUser(UserRegister model)
+    {
+        try
+        {
+            string hashedPassword = PasswordHasher.HashPassword(model.Password);
+            var connectionString = _dbContext.Database.GetConnectionString();
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var command = new SqlCommand("RegisterUser", connection))
+                {
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Username", model.Username);
+                    command.Parameters.AddWithValue("@Email", model.Email);
+                    command.Parameters.AddWithValue("@Password", hashedPassword);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+            return false;
+        }
+
+        return true;
     }
     
     public List<ViewModels.Payments> GetAllPayments(string Email)
