@@ -53,6 +53,11 @@ namespace FinanceApp.Controllers
                 {
                     return RedirectToAction("Login", "Login");
                 }
+                else
+                {
+                    ViewBag.ErrorMessage = "Username or Email already exists. Please choose a different one.";
+                    return View(model);
+                }
             }
             else
             {

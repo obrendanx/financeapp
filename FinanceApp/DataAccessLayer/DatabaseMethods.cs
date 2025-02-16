@@ -39,11 +39,18 @@ public class DatabaseMethods
                 }
             }
         }
-        catch (Exception e)
+        catch (SqlException ex)
         {
-            Console.WriteLine(e);
-            throw;
-            return false;
+            if (ex.Message.Contains("UQ_Username") || ex.Message.Contains("UQ_Email")) // This is based on the constraint name.
+            {
+                // Return false or set a specific flag to indicate a duplicate username
+                return false;
+            }
+            else
+            {
+                // Re-throw the exception or handle it accordingly
+                throw;
+            }
         }
 
         return true;

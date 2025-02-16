@@ -18,7 +18,9 @@
             <span asp-validation-for="Password" class="text-danger"></span>
 
             <input type="text" asp-for="Email" class="form-control" placeholder="Please enter a valid email address"/>
-            <span asp-validation-for="Email" class="text-danger"></span><br/>
+            <span asp-validation-for="Email" class="text-danger"></span>
+
+            <span class="text-danger">@ViewBag.ErrorMessage</span><br/>
             
             <input class="btn btn-primary" type="submit" value="Register"/>
         </div>
