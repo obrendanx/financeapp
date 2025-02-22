@@ -56,6 +56,46 @@ public class DatabaseMethods
         return true;
     }
     
+    public UserAccount GetUser(UserLogin model)
+    {
+        var connectionString = _dbContext.Database.GetConnectionString();
+        UserAccount user = new UserAccount();
+
+        try
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var command = new SqlCommand("GetUser", connection))
+                {
+                    command.CommandType = System.Data.CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Username", model.Username);
+                    command.ExecuteNonQuery();
+                    
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            user.Id = Convert.ToInt32(reader["UserID"]);
+                            user.Email = Convert.ToString(reader["Email"]);
+                            user.Username = Convert.ToString(reader["Username"]);
+                            user.Password = Convert.ToString(reader["Password"]);
+                            user.IsSetup = Convert.ToBoolean(reader["IsSetup"]);
+                            return user;
+                        }
+                    }
+                }
+
+                return user = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+    }
+    
     public List<ViewModels.Payments> GetAllPayments(string Email)
     {
         var connectionString = _dbContext.Database.GetConnectionString();

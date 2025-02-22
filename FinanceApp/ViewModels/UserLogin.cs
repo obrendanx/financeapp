@@ -7,5 +7,5 @@ public class UserLogin
     [Required]
     public string Username { get; set; }
     [Required]
-    public decimal Password { get; set; }
+    public string Password { get; set; }
 }

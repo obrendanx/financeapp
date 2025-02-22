@@ -38,6 +38,31 @@ namespace FinanceApp.Controllers
 
             return View();
         }
+
+        [HttpPost]
+        public IActionResult Login(UserLogin model)
+        {
+            UserAccount user = _dbMethods.GetUser(model);
+            if (user == null)
+            {
+                ViewBag.ErrorMessage = "Account not found, please try again or register a new account";
+                return View(model);
+            }
+            
+            bool hashedPass = Helpers.PasswordHasher.VerifyPassword(model.Password, user.Password);
+
+            if (!hashedPass)
+            {
+                ViewBag.ErrorMessage = "Invalid username or password please try again";
+                return View(model);
+            }
+            else
+            {
+                //create account
+            }
+            
+            return View(model);
+        }
         
         public IActionResult Register()
         {
