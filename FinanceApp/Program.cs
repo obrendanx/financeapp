@@ -18,11 +18,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddAuthentication().AddMicrosoftAccount(options =>
-{
-    options.ClientId = builder.Configuration["MicrosoftClientId"]!;
-    options.ClientSecret = builder.Configuration["MicrosoftSecretId"]!;
-});
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme) // Default scheme is Cookies
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Login/Login";  // Set the login path
+        options.AccessDeniedPath = "/Login/Login";  // Set the access denied path
+        options.Cookie.Name = "FinanceApp ";  // Optional: change the cookie name
+    })
+    .AddMicrosoftAccount(options =>
+    {
+        options.ClientId = builder.Configuration["MicrosoftClientId"]!;
+        options.ClientSecret = builder.Configuration["MicrosoftSecretId"]!;
+    });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer("name=DefaultConnection"));

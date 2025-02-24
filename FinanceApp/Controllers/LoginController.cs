@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using FinanceApp.DataAccessLayer;
 using FinanceApp.ViewModels;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace FinanceApp.Controllers
 {
@@ -40,7 +41,7 @@ namespace FinanceApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(UserLogin model)
+        public async Task<IActionResult> Login(UserLogin model, string? returnURL = null)
         {
             UserAccount user = _dbMethods.GetUser(model);
             if (user == null)
@@ -49,19 +50,28 @@ namespace FinanceApp.Controllers
                 return View(model);
             }
             
-            bool hashedPass = Helpers.PasswordHasher.VerifyPassword(model.Password, user.Password);
-
-            if (!hashedPass)
+            if (Helpers.PasswordHasher.VerifyPassword(model.Password, user.Password))
             {
-                ViewBag.ErrorMessage = "Invalid username or password please try again";
-                return View(model);
+                // Create your own authentication ticket and sign the user in using cookies.
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim("IsSetup", user.IsSetup.ToString()) // Example custom claim
+                };
+
+                var identity = new ClaimsIdentity(claims, "local", ClaimTypes.Name, ClaimTypes.Role);
+                var principal = new ClaimsPrincipal(identity);
+
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+                return LocalRedirect(returnURL ?? "/");
             }
             else
             {
-                //create account
+                ViewBag.ErrorMessage = "Invalid username or password";
+                return View(model);
             }
-            
-            return View(model);
         }
         
         public IActionResult Register()
